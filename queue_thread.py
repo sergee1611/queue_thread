@@ -17,38 +17,36 @@ class Cafe:
         self.tables = tables
 
     def customer_arrival(self):
-        custom_num = 0
+        custom_num = 1
         custom_quan = 20
-        while custom_num < custom_quan:
-            custom_num += 1
-            customer = Customer(custom_num)
+        while custom_num <= custom_quan:
+            customer = Customer(custom_num, self)
             pprint(f'Посетитель номер {customer.number} прибыл')
-            self.queue.put(customer)
+            if self.queue.empty():
+                customer.start()
+            else:
+                self.queue.put(customer)
+            custom_num += 1
             sleep(1)
 
     def serve_customer(self, customer):
-        while True:
-            for table in tables:
-                if table.is_busy is False:
-                    table.is_busy = True
-                    pprint(f'Посетитель номер {customer.number} сел за стол {table.number}')
-                    customer.start()
-
-
-                # customer_eating_thread = threading.Thread(target=customer.eating)
-                # customer_eating_thread.start()
-                # customer_eating_thread.join()
+        for table in self.tables:
+            if table.is_busy is False:
+                table.is_busy = True
+                pprint(f'Посетитель номер {customer.number} сел за стол {table.number}')
+                sleep(5)
+                pprint(f'Посетитель номер {customer.number} покушал и ушёл.')
+                table.is_busy = False
 
 
 class Customer(Thread):
-    def __init__(self, number):
+    def __init__(self, number, cafe):
         super().__init__()
         self.number = number
+        self.cafe = cafe
 
     def run(self):
-        sleep(5)
-        pprint(f'Посетитель номер {self.number} покушал и ушёл.')
-
+        self.cafe.serve_customer(self)
 
 
 # Создаем столики в кафе
@@ -64,16 +62,9 @@ cafe = Cafe(tables)
 customer_arrival_thread = Thread(target=cafe.customer_arrival)
 
 customer_arrival_thread.start()
-# cafe.serve_customer(customer=cafe.queue.get())
-# for i in range(cafe.queue.qsize()):
-#     customer_serve_thread = Thread(target=cafe.serve_customer             )
-#     customer_serve_thread.start()
-#     threads.append(customer_serve_thread)
 
 customer_arrival_thread.join()
 
-# for thread in threads:
-#     thread.join()
 
 
 
