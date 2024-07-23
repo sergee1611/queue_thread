@@ -22,10 +22,7 @@ class Cafe:
         while custom_num <= custom_quan:
             customer = Customer(custom_num, self)
             pprint(f'Посетитель номер {customer.number} прибыл')
-            if self.queue.empty():
-                customer.start()
-            else:
-                self.queue.put(customer)
+            customer.start()
             custom_num += 1
             sleep(1)
 
@@ -37,6 +34,16 @@ class Cafe:
                 sleep(5)
                 pprint(f'Посетитель номер {customer.number} покушал и ушёл.')
                 table.is_busy = False
+                self.check_queue()
+                break
+        else:
+            pprint(f'Посетитель номер {customer.number} ожидает свободный стол')
+            self.queue.put(customer)
+
+    def check_queue(self):
+        if not self.queue.empty():
+            customer = self.queue.get()
+            self.serve_customer(customer)
 
 
 class Customer(Thread):
